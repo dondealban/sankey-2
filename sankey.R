@@ -453,37 +453,46 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
                     }
 
                     #sankey {
-                    width: 80%%;
-                    height: 800px;
-                    float: left;
+                      width: 80%%;
+                      height: 800px;
+                      float: left;
                     }
                     
                     #events {
-                    width: 19%%;
-                    float: left;
-                    font-size: small;
-                    height: 800px;
-                    overflow: auto;
+                      width: 19%%;
+                      float: left;
+                      font-size: small;
+                      height: 800px;
+                      overflow: auto;
                     }
                     
                     #controls {
-                    width: 80%%;
-                    display: block;
-                    margin-top: 30px;
-                    margin-left: auto;
-                    margin-right: auto;
-                    float: left;
+                      width: 80%%;
+                      display: block;
+                      margin-top: 30px;
+                      margin-left: auto;
+                      margin-right: auto;
+                      float: left;
                     }
                     
                     svg {
-                    height: 1100px;
+                      height: 1100px;
                     }
                     
                     .divider {
-                    width: 5px;
-                    height: auto;
-                    display: inline-block;
+                      width: 5px;
+                      height: auto;
+                      display: inline-block;
                     }
+          
+                    footer {
+                      width: 100%%;
+                      float: left;
+                      font-size: small;
+                      text-align: left;
+                      margin-top: 55px;
+                    }
+                    
                   </style>
                   <script>
                     %s
@@ -542,6 +551,9 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
                   <script>
                     %s
                   </script>
+                  <footer>
+                    <p>Very special thanks go out to <a href = "https://github.com/ramnathv">Ramnath Vaidyanathan</a> and <a href = "https://github.com/timelyportfolio">@timelyportfolio</a> for their amazing work on getting d3 graphics to work with R.</p>
+                  </footer>
                   </body>
                   </html>', sankey, page_title, graph_title, events, main, after, gif)
   writeLines(text = html, con = destfile)
