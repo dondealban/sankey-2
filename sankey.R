@@ -349,8 +349,6 @@
 .generate_after_js <- function(data, targets, target_color = "#FF6A6A", non_target_color = "#90EE90", 
                               link_color = "#66CCFF", destfile = "www/js/after.js") {
   entities <- unique(c(data$source, data$target))
-  target_color <- col2hex(target_color)
-  non_target_color <- col2hex(non_target_color)
   
   json = vector()
   for (entity in entities) {
