@@ -402,9 +402,9 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
   .generate_gif_js(data, targets)
   
   events <- .generate_events_array(data)
-  main <- readr::read_lines("www/js/main.js") %>% paste(collapse = "\n")
-  after <- readr::read_lines("www/js/after.js") %>% paste(collapse = "\n")
-  gif <- readr::read_lines("www/js/gif.js") %>% paste(collapse = "\n")
+  main <- readLines("www/js/main.js") %>% paste(collapse = "\n")
+  after <- readLines("www/js/after.js") %>% paste(collapse = "\n")
+  gif <- readLines("www/js/gif.js") %>% paste(collapse = "\n")
   
   html <- sprintf('
                   <!DOCTYPE HTML>
