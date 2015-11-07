@@ -1,20 +1,5 @@
-.create_dir_skeleton <- function(package_dir = "C:/Playground/R-3.2.2/library/rCharts/libraries/rCharts_d3_sankey/") {
-  if (!dir.exists("www")) {
-    dir.create("www")
-    dir.create("www/js")
-    dir.create("www/css")
-  } else {
-    if (!dir.exists("www/js")) dir.create("www/js")
-    if (!dir.exists("www/css")) dir.create("www/css")
-  }
-  
-  file.copy(from = sprintf("%s/css/sankey.css", package_dir), to = "www/css/sankey.css")
-  #file.copy(from = sprintf("%s/js/d3.v3.js", package_dir), to = "www/js/d3.v3.js")
-  file.copy(from = sprintf("%s/js/sankey.js", package_dir), to = "www/js/sankey.js")
-}
-
 .generate_main_js <- function(data, chart_id = "sankey", width = 1200, height = 800, node_width = 15, node_padding = 10, layout = 32, 
-                            units = "", node_tooltip = NULL, link_tooltip = NULL, destfile = "www/js/main.js") {
+                            units = "", node_tooltip = NULL, link_tooltip = NULL, destfile = "main.txt") {
   
   if (is.null(node_tooltip)) node_tooltip <- 'd.name + "\\n$" + format(d.value);'
   if (is.null(link_tooltip)) link_tooltip <- 'd.source.name + " sent $" + format(d.value) + " to " + d.target.name + " on " + d.date;'
@@ -156,7 +141,7 @@
   writeLines(text = js, con = destfile)
 }
 
-.generate_gif_js <- function(data, targets, delay = 2, destfile = "www/js/gif.js") {
+.generate_gif_js <- function(data, targets, delay = 2, destfile = "gif.txt") {
   data$path <- apply(data, 1, function(row) {
     if (row[1] %in% targets) {
       return(sprintf("%s %s %s", row[1], row[2], row[4]))
@@ -347,7 +332,7 @@
 }
                  
 .generate_after_js <- function(data, targets, target_color = "#FF6A6A", non_target_color = "#90EE90", 
-                              link_color = "#66CCFF", destfile = "www/js/after.js") {
+                              link_color = "#66CCFF", destfile = "after.txt") {
   entities <- unique(c(data$source, data$target))
   
   json = vector()
@@ -396,17 +381,19 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
   if (!all(c("source", "target", "value", "date") %in% names(data))) stop("Your data doesn't look right. You should have a source, target, value, and date column.")
   if (!require(dplyr)) stop("I know it's a faux pas, but dplyr is far too amazing to not use. As a result, the package does need to be installed for this code to work.")
   
-  .create_dir_skeleton()
   .generate_main_js(data)
   .generate_after_js(data, targets)
   .generate_gif_js(data, targets)
   
   events <- .generate_events_array(data)
-  main <- readLines("www/js/main.js") %>% paste(collapse = "\n")
-  after <- readLines("www/js/after.js") %>% paste(collapse = "\n")
-  gif <- readLines("www/js/gif.js") %>% paste(collapse = "\n")
+  main <- readLines("main.txt") %>% paste(collapse = "\n")
+  after <- readLines("after.txt") %>% paste(collapse = "\n")
+  gif <- readLines("gif.txt") %>% paste(collapse = "\n")
+  file.remove("main.txt")
+  file.remove("after.txt")
+  file.remove("gif.txt")
   
-  html <- sprintf('
+  html <- paste('
                   <!DOCTYPE HTML>
                   <html>
                   <head>
@@ -786,17 +773,17 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
                     };
                   </script>
                   
-                  <title>%s</title>
+                  <title>', page_title, '</title>
                   </head>
                   
                   <body>
-                  <div style = "text-align: center;"><h1>%s</h1></div>
+                  <div style = "text-align: center;"><h1>', graph_title, '</h1></div>
                   <div>
                   <div id = "sankey" class = "rChart rCharts_d3_sankey" align = "center"></div>
                   <div id = "events">
                   <script>
                   $(function() {
-                  var events = %s;
+                  var events = ', events, ';
                   for (i = 0; i < events.length; i++) {
                   $("#events").append(events[i]);
                   }
@@ -831,19 +818,19 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
                   </button>
                   </div>
                   <script>
-                    %s
+                    ', main, '
                   </script>
                   <script>
-                    %s
+                    ', after, '
                   </script>
                   <script>
-                    %s
+                    ', gif, '
                   </script>
                   <footer>
                     <p>Very special thanks goes out to <a href = "https://github.com/ramnathv">Ramnath Vaidyanathan</a> and <a href = "https://github.com/timelyportfolio">@timelyportfolio</a> for their amazing work on getting d3 graphics to work with R.</p>
                   </footer>
                   </body>
-                  </html>', page_title, graph_title, events, main, after, gif)
+                  </html>', sep = "")
   writeLines(text = html, con = destfile)
 }
   
