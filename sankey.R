@@ -394,7 +394,7 @@
   
 generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagram", after_script = TRUE, gif = TRUE, dir = ".", destfile = "index.html") {
   if (!all(c("source", "target", "value", "date") %in% names(data))) stop("Your data doesn't look right. You should have a source, target, value, and date column.")
-  if (!require(magrittr)) stop("I know it's a faux pas, but the pip is far too amazing to not use. As a result, the magrittr package does need to be installed for this code to work.")
+  if (!require(magrittr)) stop("I know it's a faux pas, but the pipe is far too amazing to not use. As a result, the magrittr package does need to be installed for this code to work.")
   
   .create_dir_skeleton()
   .generate_main_js(data)
@@ -515,7 +515,7 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
                   </div>
                   </div>
                   <div id = "controls" align = "center">
-                  <h4>Use the buttons to below to control the animation</h4>
+                  <h4>Use the buttons below to control the animation</h4>
                   <button type = "button" class = "btn" id = "start">
                     <i class = "fa fa-play fa-2x"></i>
                   </button>
@@ -550,7 +550,7 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
                     %s
                   </script>
                   <footer>
-                    <p>Very special thanks go out to <a href = "https://github.com/ramnathv">Ramnath Vaidyanathan</a> and <a href = "https://github.com/timelyportfolio">@timelyportfolio</a> for their amazing work on getting d3 graphics to work with R.</p>
+                    <p>Very special thanks goes out to <a href = "https://github.com/ramnathv">Ramnath Vaidyanathan</a> and <a href = "https://github.com/timelyportfolio">@timelyportfolio</a> for their amazing work on getting d3 graphics to work with R.</p>
                   </footer>
                   </body>
                   </html>', sankey, page_title, graph_title, events, main, after, gif)
