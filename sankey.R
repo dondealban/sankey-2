@@ -1,4 +1,4 @@
-.generate_main_js <- function(data, chart_id = "sankey", width = 1200, height = 800, node_width = 15, node_padding = 10, layout = 32, 
+.generate_main_js <- function(data, chart_id = "sankey", node_width = 15, node_padding = 10, layout = 32, 
                             units = "", node_tooltip = NULL, link_tooltip = NULL, destfile = "main.txt") {
   
   if (is.null(node_tooltip)) node_tooltip <- 'd.name + "\\n$" + format(d.value);'
@@ -14,10 +14,12 @@
                         "date": [%s]}', src, target, value, date)
   js <- sprintf('
   (function(){
+    var width = $(window).width() * .78;
+    var height = $(window).height() * .75;
     var params = {
       "dom": "sankey",
-      "width": %d,
-      "height": %d,
+      "width": width,
+      "height": height,
       "data": %s,
       "nodeWidth": %d,
       "nodePadding": %d,
@@ -137,8 +139,8 @@
       sankey.relayout();
       link.attr("d", path);
     }
-  })();', width, height, data_json, node_width, node_padding, layout, units, link_tooltip, node_tooltip)
-  writeLines(text = js, con = destfile)
+  })();', data_json, node_width, node_padding, layout, units, link_tooltip, node_tooltip)
+  return(js)
 }
 
 .generate_gif_js <- function(data, targets, delay = 2, destfile = "gif.txt") {
@@ -328,7 +330,7 @@
     $("#speed-down").on("click", speed_down);
     $("#reset").on("click", reset);
   });', delay, n, events, targets)
-  writeLines(text = gif, con = destfile)
+  return(gif)
 }
                  
 .generate_after_js <- function(data, targets, target_color = "#FF6A6A", non_target_color = "#90EE90", 
@@ -357,7 +359,7 @@
     d3.selectAll("#sankey svg path.link")
       .style("stroke", function(d) { return "%s" })', json, link_color)
   
-  writeLines(text = js, con = destfile)
+  return(js)
 }
 
 .generate_events_array <- function(data) {
@@ -381,17 +383,11 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
   if (!all(c("source", "target", "value", "date") %in% names(data))) stop("Your data doesn't look right. You should have a source, target, value, and date column.")
   if (!require(dplyr)) stop("I know it's a faux pas, but dplyr is far too amazing to not use. As a result, the package does need to be installed for this code to work.")
   
-  .generate_main_js(data)
-  .generate_after_js(data, targets)
-  .generate_gif_js(data, targets)
   
   events <- .generate_events_array(data)
-  main <- readLines("main.txt") %>% paste(collapse = "\n")
-  after <- readLines("after.txt") %>% paste(collapse = "\n")
-  gif <- readLines("gif.txt") %>% paste(collapse = "\n")
-  file.remove("main.txt")
-  file.remove("after.txt")
-  file.remove("gif.txt")
+  main <- .generate_main_js(data)
+  after <- .generate_after_js(data, targets)
+  gif <- .generate_gif_js(data, targets)
   
   html <- paste('
                   <!DOCTYPE HTML>
@@ -432,26 +428,24 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
                       display: block;
                       margin-left: auto;
                       margin-right: auto;
-                      width: 1200px;
-                      height: 1000px;
+                      width: 80%;
+                      height: 100%;
                     }
 
                     #sankey {
-                      width: 80%%;
-                      height: 800px;
+                      width: 80%;
                       float: left;
                     }
                     
                     #events {
-                      width: 19%%;
+                      width: 19%;
                       float: left;
                       font-size: small;
-                      height: 800px;
                       overflow: auto;
                     }
                     
                     #controls {
-                      width: 80%%;
+                      width: 80%;
                       display: block;
                       margin-top: 30px;
                       margin-left: auto;
@@ -460,7 +454,7 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
                     }
                     
                     svg {
-                      height: 1100px;
+                      height: 100%;
                     }
                     
                     .divider {
@@ -470,7 +464,7 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
                     }
           
                     footer {
-                      width: 100%%;
+                      width: 100%;
                       float: left;
                       font-size: small;
                       text-align: left;
@@ -787,6 +781,8 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
                   for (i = 0; i < events.length; i++) {
                   $("#events").append(events[i]);
                   }
+                  $("#sankey").css("height", ($(window).height() * .75) + "px");
+                  $("#events").css("height", ($(window).height() * .75) + "px");
                   });
                   </script>
                   </div>
