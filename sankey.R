@@ -263,13 +263,13 @@
         $("#events p:nth-of-type(" + (num + 1) + ")").css("color", "#FF6A6A");
         if (scroll) {
           threshold += ($("#events p:nth-of-type(" + (num + 1) + ")").outerHeight(true) + $("#events h3:nth-of-type(" + (num + 1) + ")").outerHeight(true));
-          if (threshold >= $("#events").height()) {
+          if (threshold >= ($("#events").height() - 5)) {
             height += $("#events p:nth-of-type(" + (num + 1) + ")").outerHeight(true) + $("#events h3:nth-of-type(" + (num + 1) + ")").outerHeight(true);
             $("#events").animate({scrollTop: height}, "slow");
           }
         } else {
           if (step_counter === 1) {
-            threshold = $("#events").height - ($("#events p:nth-of-type(" + (num + 1) + ")").outerHeight(true) + $("#events h3:nth-of-type(" + (num + 1) + ")").outerHeight(true));
+            threshold = ($("#events").height() - 5) - ($("#events p:nth-of-type(" + (num + 1) + ")").outerHeight(true) + $("#events h3:nth-of-type(" + (num + 1) + ")").outerHeight(true));
           } else {
             threshold -= ($("#events p:nth-of-type(" + (num + 1) + ")").outerHeight(true) + $("#events h3:nth-of-type(" + (num + 1) + ")").outerHeight(true));
           }
@@ -473,8 +473,6 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
                     }
           
                     footer {
-                      position: absolute;
-                      bottom: 0;
                       width: 100%;
                       float: left;
                       font-size: small;
