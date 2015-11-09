@@ -69,4 +69,4 @@ dat <- data.frame("source" = c("Z", "Z", "o", "o", "o", "Z", "X", "m", "d",
 generate_html(dat, targets = c("o", "Z", "F"), graph_title = "My Cool Animated Sankey Diagram!")
 ```
 
-A live demo can also be viewed [here](http://45.55.233.87/shiny/sankey).
+A live demo can also be viewed by going [here](http://45.55.233.87/shiny/) and choosing the sankey option.
