@@ -269,7 +269,7 @@
           }
         } else {
           if (step_counter === 1) {
-            threshold = 795 - ($("#events p:nth-of-type(" + (num + 1) + ")").outerHeight(true) + $("#events h3:nth-of-type(" + (num + 1) + ")").outerHeight(true));
+            threshold = $("#events").height - ($("#events p:nth-of-type(" + (num + 1) + ")").outerHeight(true) + $("#events h3:nth-of-type(" + (num + 1) + ")").outerHeight(true));
           } else {
             threshold -= ($("#events p:nth-of-type(" + (num + 1) + ")").outerHeight(true) + $("#events h3:nth-of-type(" + (num + 1) + ")").outerHeight(true));
           }
@@ -304,7 +304,6 @@
       stop();
       num -= 1;
       step_counter += 1;
-      
       event(num, false);
     };
 
