@@ -263,7 +263,7 @@
         $("#events p:nth-of-type(" + (num + 1) + ")").css("color", "#FF6A6A");
         if (scroll) {
           threshold += ($("#events p:nth-of-type(" + (num + 1) + ")").outerHeight(true) + $("#events h3:nth-of-type(" + (num + 1) + ")").outerHeight(true));
-          if (threshold >= 795) {
+          if (threshold >= $("#events").height()) {
             height += $("#events p:nth-of-type(" + (num + 1) + ")").outerHeight(true) + $("#events h3:nth-of-type(" + (num + 1) + ")").outerHeight(true);
             $("#events").animate({scrollTop: height}, "slow");
           }
@@ -443,11 +443,21 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
                       font-size: small;
                       overflow: auto;
                     }
+
+                    #events h3 {
+                      font-size: 12px;
+                      font-weight: bold;
+                    }
+
+                    #events p {
+                      font-size: 10px;
+                    }
                     
                     #controls {
                       width: 80%;
+                      height: auto;
                       display: block;
-                      margin-top: 30px;
+                      margin-top: 10px;
                       margin-left: auto;
                       margin-right: auto;
                       float: left;
@@ -464,11 +474,13 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
                     }
           
                     footer {
+                      position: absolute;
+                      bottom: 0;
                       width: 100%;
                       float: left;
                       font-size: small;
                       text-align: left;
-                      margin-top: 55px;
+                      margin-top: 10px;
                     }
                     
                   </style>
@@ -781,36 +793,35 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
                   for (i = 0; i < events.length; i++) {
                   $("#events").append(events[i]);
                   }
-                  $("#sankey").css("height", ($(window).height() * .75) + "px");
-                  $("#events").css("height", ($(window).height() * .75) + "px");
+                  $("#sankey").css("height", ($(window).height() * .80) + "px");
+                  $("#events").css("height", ($(window).height() * .80) + "px");
                   });
                   </script>
                   </div>
                   </div>
                   <div id = "controls" align = "center">
-                  <h4>Use the buttons below to control the animation</h4>
                   <button type = "button" class = "btn" id = "start">
-                    <i class = "fa fa-play fa-2x"></i>
+                    <i class = "fa fa-play"></i>
                   </button>
                   <button type = "button" class = "btn" id = "stop">
-                    <i class = "fa fa-stop fa-2x"></i>
+                    <i class = "fa fa-stop"></i>
                   </button>
                   <button type = "button" class = "btn" id = "step-back">
-                    <i class = "fa fa-step-backward fa-2x"></i>
+                    <i class = "fa fa-step-backward"></i>
                   </button>
                   <button type = "button" class = "btn" id = "step-forward">
-                    <i class = "fa fa-step-forward fa-2x"></i>
+                    <i class = "fa fa-step-forward"></i>
                   </button>
                   <div class = "divider"></div>
                   <button type = "button" class = "btn" id = "speed-down">
-                    <i class = "fa fa-minus fa-2x"></i>
+                    <i class = "fa fa-minus"></i>
                   </button>
                   <button type = "button" class = "btn" id = "speed-up">
-                    <i class = "fa fa-plus fa-2x"></i>
+                    <i class = "fa fa-plus"></i>
                   </button>
                   <div class = "divider"></div>
                   <button type = "button" class = "btn" id = "reset">
-                    <i class = "fa fa-rotate-left fa-2x"></i>
+                    <i class = "fa fa-rotate-left"></i>
                   </button>
                   </div>
                   <script>
