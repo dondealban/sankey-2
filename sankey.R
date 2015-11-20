@@ -1,17 +1,26 @@
 .generate_main_js <- function(data, chart_id = "sankey", node_width = 15, node_padding = 10, layout = 32, 
-                            units = "", node_tooltip = NULL, link_tooltip = NULL, destfile = "main.txt") {
+                            units = "", node_tooltip = NULL, link_tooltip_fw = NULL, link_tooltip_bw = NULL) {
   
   if (is.null(node_tooltip)) node_tooltip <- 'd.name + "\\n$" + format(d.value);'
-  if (is.null(link_tooltip)) link_tooltip <- 'd.source.name + " sent $" + format(d.value) + " to " + d.target.name + " on " + d.date;'
+  if (is.null(link_tooltip_fw)) {
+    link_tooltip_fw <- 'd.source.name + " sent $" + d.value + " to " + d.target.name + " on " + d.date'
+    if ("reverse" %in% tolower(names(data))) {
+      link_tooltip_bw <- 'd.target.name + " sent $" + d.value + " to " + d.source.name + " on " + d.date'
+    } else {
+      link_tooltip_bw <- link_tooltip_fw
+    }
+  }
   
   src <- sprintf('"%s"', data$source) %>% paste(collapse = ", ")
   target <- sprintf('"%s"', data$target) %>% paste(collapse = ", ")
   value <- sprintf('"%s"', data$value) %>% paste(collapse = ", ")
   date <- sprintf('"%s"', data$date) %>% paste(collapse = ", ")
+  reverse <- sprintf('"%s"', data$reverse) %>% paste(collapse = ", ")
   data_json <- sprintf('{"source": [%s],
                         "target": [%s],
                         "value": [%s],
-                        "date": [%s]}', src, target, value, date)
+                        "date": [%s],
+                        "reverse": [%s]}', src, target, value, date, reverse)
   js <- sprintf('
   (function(){
     var width = $(window).width() * .78;
@@ -61,7 +70,7 @@
     data.source.forEach(function (d, i) {
       nodes.push({ "name": data.source[i] });
       nodes.push({ "name": data.target[i] });
-      links.push({ "source": data.source[i], "target": data.target[i], "value": +data.value[i], "date": data.date[i] });
+      links.push({ "source": data.source[i], "target": data.target[i], "value": +data.value[i], "date": data.date[i], "reverse": data.reverse[i] });
     }); 
     
     //now get nodes based on links data
@@ -97,7 +106,7 @@
       .sort(function (a, b) { return b.dy - a.dy; });
     
     link.append("title")
-      .text(function (d) { return %s });
+      .text(function (d) { return(d.reverse === "1" ? %s : %s) });
     
     var node = svg.append("g").selectAll(".node")
     .data(nodes)
@@ -139,11 +148,11 @@
       sankey.relayout();
       link.attr("d", path);
     }
-  })();', data_json, node_width, node_padding, layout, units, link_tooltip, node_tooltip)
+  })();', data_json, node_width, node_padding, layout, units, link_tooltip_bw, link_tooltip_fw, node_tooltip)
   return(js)
 }
 
-.generate_gif_js <- function(data, targets, delay = 2, destfile = "gif.txt") {
+.generate_gif_js <- function(data, targets, delay = 2) {
   data$path <- apply(data, 1, function(row) {
     if (row[1] %in% targets) {
       return(sprintf("%s %s %s", row[1], row[2], row[4]))
@@ -185,10 +194,22 @@
     text_colors <- paste(text_colors, collapse = ", ")
     
     link_colors <- apply(data, 1, function(row) {
-      if (as.Date(row[4], format = "%m/%d/%y") == dates[i]) {
-        return(sprintf('"%s": "#66CCFF"', row[5])) 
+      if ("reverse" %in% names(data)) {
+        if (as.Date(row[4], format = "%m/%d/%y") == dates[i]) {
+          if (row[5] == 1) {
+            return(sprintf('"%s": "#A020F0"', row[6]))
+          } else {
+           return(sprintf('"%s": "#66CCFF"', row[6])) 
+          }
+        } else {
+          return(sprintf('"%s": "#F7F7F7"', row[6]))
+        }
       } else {
-        return(sprintf('"%s": "#F7F7F7"', row[5]))
+        if (as.Date(row[4], format = "%m/%d/%y") == dates[i]) {
+          return(sprintf('"%s": "#66CCFF"', row[5]))
+        } else {
+          return(sprintf('"%s": "#F7F7F7"', row[5]))
+        }
       }
     }) %>% unlist() %>% unname()
     
@@ -332,9 +353,16 @@
   return(gif)
 }
                  
-.generate_after_js <- function(data, targets, target_color = "#FF6A6A", non_target_color = "#90EE90", 
-                              link_color = "#66CCFF", destfile = "after.txt") {
+.generate_after_js <- function(data, targets, target_color = "#FF6A6A", non_target_color = "#90EE90") {
   entities <- unique(c(data$source, data$target))
+  
+  if ("reverse" %in% names(data)) {
+    link_colors <- ifelse(data$reverse == 1, "#A020F0", "#66CCFF")
+  } else {
+    link_colors <- "#66CCFF"
+  }
+  link_colors <- sapply(1:nrow(data), function(i) paste(data$source[i], data$target[i], data$date[i]) %>% {sprintf('"%s": "%s"', ., link_colors[i])}) %>% unlist() %>% unname()
+  link_colors <- paste(link_colors, collapse = ", ")
   
   json = vector()
   for (entity in entities) {
@@ -344,10 +372,11 @@
       json <- c(json, sprintf('"%s": "%s"', entity, non_target_color))
     }
   }
-  json <- paste(json, collapse = ", ")
+  node_colors <- paste(json, collapse = ", ")
   
   js <- sprintf('
     var node_colors = JSON.parse(\'{%s}\');
+    var link_colors = JSON.parse(\'{%s}\');
     d3.selectAll("#sankey svg .node rect")
       .style("fill", function(d) { return node_colors[d.name] })
       .style("stroke", function(d) { d3.rgb(node_colors[d.name]).darker(2); })
@@ -356,7 +385,7 @@
       .style("color", "#FF6A6A")
   
     d3.selectAll("#sankey svg path.link")
-      .style("stroke", function(d) { return "%s" })', json, link_color)
+      .style("stroke", function(d) { return link_colors[d.source.name + " " + d.target.name + " " + d.date] })', node_colors, link_colors)
   
   return(js)
 }
@@ -367,7 +396,8 @@
   
   for (d in dates) {
     tmp <- data %>% filter(as.Date(date, format = "%m/%d/%y") == d)
-    events <- apply(tmp, 1, function(row) sprintf("+ %s sends %s $%s", row[1], row[2], format(row[3], big.mark = ","))) %>% unlist()
+    tmp$value <- format(tmp$value, big.mark = ",")
+    events <- apply(tmp, 1, function(row) sprintf("+ %s sends %s $%s", row[1], row[2], row[3])) %>% unlist()
     events <- paste(events, collapse = "<br>")
     events_array_elem <- sprintf('"<h3 style = \'padding: 0px; margin: 0px;\'>%s</h3><p style = \'margin: 3px 0px 10px 15px; font-size: small;\'>%s</p>"',
                                  as.character(d),
@@ -378,10 +408,46 @@
   return(events_array)
 }
   
-generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagram", after_script = TRUE, gif = TRUE, dir = ".", destfile = "index.html") {
+generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagram", after_script = TRUE, gif = TRUE, dir = ".", allow_circular_paths = TRUE, destfile = "index.html") {
   if (!all(c("source", "target", "value", "date") %in% names(data))) stop("Your data doesn't look right. You should have a source, target, value, and date column.")
   if (!require(dplyr)) stop("I know it's a faux pas, but dplyr is far too amazing to not use. As a result, the package does need to be installed for this code to work.")
   
+  if (allow_circular_paths) {
+    reverse <- sapply(2:nrow(data), function(i) {
+      j <- 1:(i - 1)
+      row <- c(data$source[i], data$target[i])
+      if (data$target[i] %in% data$source[j]) {
+        k <- which(data$source[j] == data$target[i])
+        if (any(data$source[i] %in% data$target[k])) {
+          row_duplicated <- data[j, ] %>% filter(source == row[1] & target == row[2]) %>% nrow()
+          if (row_duplicated) {
+            d <- which(data$source[j] %in% row[1] & data$target[j] %in% row[2]) %>% max()
+            if (d > max(k)) {
+              reverse <- data$reverse[d]
+            } else {
+              reverse <- 0
+            }
+          } else {
+            reverse <- 1
+          } 
+        } else {
+          reverse <- 0
+        }
+      } else {
+        reverse <- 0
+      }
+    }) %>% unlist() %>% unname()
+    data$reverse <- c(0, reverse)
+    data <- lapply(1:nrow(data), function(i) {
+      if (data$reverse[i] == 1) {
+        data <- data[i, c(2, 1, 3:5)]
+        names(data) <- c("source", "target", "value", "date", "reverse")
+        return(data)
+      } else {
+        return(data[i, ])
+      }
+    }) %>% plyr::rbind.fill()
+  }
   
   events <- .generate_events_array(data)
   main <- .generate_main_js(data)
