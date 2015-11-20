@@ -413,40 +413,42 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
   if (!require(dplyr)) stop("I know it's a faux pas, but dplyr is far too amazing to not use. As a result, the package does need to be installed for this code to work.")
   
   if (allow_circular_paths) {
-    reverse <- sapply(2:nrow(data), function(i) {
-      j <- 1:(i - 1)
-      row <- c(data$source[i], data$target[i])
-      if (data$target[i] %in% data$source[j]) {
-        k <- which(data$source[j] == data$target[i])
-        if (any(data$source[i] %in% data$target[k])) {
-          row_duplicated <- data[j, ] %>% filter(source == row[1] & target == row[2]) %>% nrow()
-          if (row_duplicated) {
-            d <- which(data$source[j] %in% row[1] & data$target[j] %in% row[2]) %>% max()
-            if (d > max(k)) {
-              reverse <- data$reverse[d]
+    if (!"reverse" %in% names(data)) {
+      reverse <- sapply(2:nrow(data), function(i) {
+        j <- 1:(i - 1)
+        row <- c(data$source[i], data$target[i])
+        if (data$target[i] %in% data$source[j]) {
+          k <- which(data$source[j] == data$target[i])
+          if (any(data$source[i] %in% data$target[k])) {
+            row_duplicated <- data[j, ] %>% filter(source == row[1] & target == row[2]) %>% nrow()
+            if (row_duplicated) {
+              d <- which(data$source[j] %in% row[1] & data$target[j] %in% row[2]) %>% max()
+              if (d > max(k)) {
+                reverse <- data$reverse[d]
+              } else {
+                reverse <- 0
+              }
             } else {
-              reverse <- 0
-            }
+              reverse <- 1
+            } 
           } else {
-            reverse <- 1
-          } 
+            reverse <- 0
+          }
         } else {
           reverse <- 0
         }
-      } else {
-        reverse <- 0
-      }
-    }) %>% unlist() %>% unname()
-    data$reverse <- c(0, reverse)
-    data <- lapply(1:nrow(data), function(i) {
-      if (data$reverse[i] == 1) {
-        data <- data[i, c(2, 1, 3:5)]
-        names(data) <- c("source", "target", "value", "date", "reverse")
-        return(data)
-      } else {
-        return(data[i, ])
-      }
-    }) %>% plyr::rbind.fill()
+      }) %>% unlist() %>% unname()
+      data$reverse <- c(0, reverse)
+      data <- lapply(1:nrow(data), function(i) {
+        if (data$reverse[i] == 1) {
+          data <- data[i, c(2, 1, 3:5)]
+          names(data) <- c("source", "target", "value", "date", "reverse")
+          return(data)
+        } else {
+          return(data[i, ])
+        }
+      }) %>% plyr::rbind.fill()
+    }
   }
   
   events <- .generate_events_array(data)
