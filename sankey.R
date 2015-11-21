@@ -246,7 +246,8 @@
         .style("fill", function(d) { return (targets.indexOf(d.name) > -1) ? "#FF6A6A" : "#90EE90" })
         .style("stroke", function(d) { return (targets.indexOf(d.name) >= 0) ? "#FF6A6A" : "#90EE90" })
       $("#sankey svg .node text").css("fill", "#000000");
-      $("#sankey svg path.link").css("stroke", "#66CCFF");
+      d3.selectAll("#sankey svg path.link")
+        .style("stroke", function(d) { console.log(d.reverse); return(d.reverse === "1" ? "#A020F0" : "#66CCFF") })
       $("#events").animate({scrollTop: 0}, "fast");
     };
 
@@ -397,7 +398,17 @@
   for (d in dates) {
     tmp <- data %>% filter(as.Date(date, format = "%m/%d/%y") == d)
     tmp$value <- format(tmp$value, big.mark = ",")
-    events <- apply(tmp, 1, function(row) sprintf("+ %s sends %s $%s", row[1], row[2], row[3])) %>% unlist()
+    events <- apply(tmp, 1, function(row) {
+      if ("reverse" %in% names(data)) {
+        if (row[5] == 1) {
+          return(sprintf("+ %s sends %s $%s", row[2], row[1], row[3]))
+        } else {
+          return(sprintf("+ %s sends %s $%s", row[1], row[2], row[3]))
+        }
+      } else {
+        return(sprintf("+ %s sends %s $%s", row[1], row[2], row[3]))
+      }
+    }) %>% unlist()
     events <- paste(events, collapse = "<br>")
     events_array_elem <- sprintf('"<h3 style = \'padding: 0px; margin: 0px;\'>%s</h3><p style = \'margin: 3px 0px 10px 15px; font-size: small;\'>%s</p>"',
                                  as.character(d),
