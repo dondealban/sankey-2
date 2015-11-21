@@ -422,11 +422,12 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
           if (any(data$source[i] %in% data$target[k])) {
             row_duplicated <- data[j, ] %>% filter(source == row[1] & target == row[2]) %>% nrow()
             if (row_duplicated) {
-              d <- which(data$source[j] %in% row[1] & data$target[j] %in% row[2]) %>% max()
-              if (d > max(k)) {
-                reverse <- data$reverse[d]
-              } else {
+              dupe <- which(data$source[j] %in% row[1] & data$target[j] %in% row[2]) %>% min()
+              rev <- which(data$target[j] %in% row[1] & data$source[j] %in% row[2]) %>% min()
+              if (dupe < rev) {
                 reverse <- 0
+              } else {
+                reverse <- 1
               }
             } else {
               reverse <- 1
@@ -437,6 +438,7 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
         } else {
           reverse <- 0
         }
+        return(reverse)
       }) %>% unlist() %>% unname()
       data$reverse <- c(0, reverse)
       data <- lapply(1:nrow(data), function(i) {
