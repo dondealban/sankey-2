@@ -419,36 +419,39 @@
   return(events_array)
 }
 
-.reverse_paths <- function(data) {
-  if (!"reverse" %in% names(data)) {
-    reverse <- sapply(2:nrow(data), function(i) {
-      j <- 1:(i - 1)
-      row <- c(data$source[i], data$target[i])
-      if (data$target[i] %in% data$source[j]) {
-        k <- which(data$source[j] == data$target[i])
-        if (any(data$source[i] %in% data$target[k])) {
-          row_duplicated <- data[j, ] %>% filter(source == row[1] & target == row[2]) %>% nrow()
-          if (row_duplicated) {
-            dupe <- which(data$source[j] %in% row[1] & data$target[j] %in% row[2]) %>% min()
-            rev <- which(data$target[j] %in% row[1] & data$source[j] %in% row[2]) %>% min()
-            if (dupe < rev) {
-              reverse <- 0
-            } else {
-              reverse <- 1
-            }
+.add_reverse_flags <- function(data) {
+  reverse <- sapply(2:nrow(data), function(i) {
+    j <- 1:(i - 1)
+    row <- c(data$source[i], data$target[i])
+    if (data$target[i] %in% data$source[j]) {
+      k <- which(data$source[j] == data$target[i])
+      if (any(data$source[i] %in% data$target[k])) {
+        row_duplicated <- data[j, ] %>% filter(source == row[1] & target == row[2]) %>% nrow()
+        if (row_duplicated) {
+          dupe <- which(data$source[j] %in% row[1] & data$target[j] %in% row[2]) %>% min()
+          rev <- which(data$target[j] %in% row[1] & data$source[j] %in% row[2]) %>% min()
+          if (dupe < rev) {
+            reverse <- 0
           } else {
             reverse <- 1
-          } 
+          }
         } else {
-          reverse <- 0
-        }
+          reverse <- 1
+        } 
       } else {
         reverse <- 0
       }
-      return(reverse)
-    }) %>% unlist() %>% unname()
-    data$reverse <- c(0, reverse)
-  }
+    } else {
+      reverse <- 0
+    }
+    return(reverse)
+  }) %>% unlist() %>% unname()
+  data$reverse <- c(0, reverse)
+  return(data)
+}
+
+.reverse_paths <- function(data) {
+  if (!"reverse" %in% names(data)) data <- .add_reverse_flags(data)
   data <- lapply(1:nrow(data), function(i) {
     if (data$reverse[i] == 1) {
       data <- data[i, c(2, 1, 3:5)]
