@@ -921,7 +921,11 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
                   </footer>
                   </body>
                   </html>', sep = "")
-  writeLines(text = html, con = destfile)
+  if (is.na(destfile)) {
+    return(html)
+  } else {
+    writeLines(text = html, con = destfile)
+  }
 }
   
  
