@@ -1,7 +1,7 @@
 .generate_main_js <- function(data, chart_id = "sankey", node_width = 15, node_padding = 10, layout = 32, 
                             units = "", node_tooltip = NULL, link_tooltip_fw = NULL, link_tooltip_bw = NULL) {
   
-  if (is.null(node_tooltip)) node_tooltip <- 'd.name + "\\n$" + format(d.value);'
+  if (is.null(node_tooltip)) node_tooltip <- 'd.name + "\\nTotal Out: " + out_n + " transactions for $" + format(out_total) + "\\nTotal In: " + in_n + " transactions for $" + format(in_total);'
   if (is.null(link_tooltip_fw)) {
     link_tooltip_fw <- 'd.source.name + " sent $" + d.value + " to " + d.target.name + " on " + d.date'
     if ("reverse" %in% tolower(names(data))) {
@@ -119,7 +119,18 @@
               '\n\t\t\t\t\t.style("fill", function (d) { return d.color = color(d.name.replace(/ .*/, "")); })',
               '\n\t\t\t\t\t.style("stroke", function (d) { return d3.rgb(d.color).darker(2); })',
               '\n\t\t\t\t\t.append("title")',
-              '\n\t\t\t\t\t.text(function (d) { return ', node_tooltip, ' });',
+              '\n\t\t\t\t\t.text(function (d) {',
+              '\n\t\t\t\t\t\tvar out_total = 0,',
+              '\n\t\t\t\t\t\t\tin_total = 0,', 
+              '\n\t\t\t\t\t\t\tout_n = d.sourceLinks.length,', 
+              '\n\t\t\t\t\t\t\tin_n = d.targetLinks.length;',
+              '\n\t\t\t\t\t\td.sourceLinks.forEach(function(s) {', 
+              '\n\t\t\t\t\t\t\tout_total += s.value;', 
+              '\n\t\t\t\t\t\t});',
+              '\n\t\t\t\t\t\td.targetLinks.forEach(function(t) {',
+              '\n\t\t\t\t\t\t\tin_total += t.value;',
+              '\n\t\t\t\t\t\t});',
+              '\n\t\t\t\t\t\treturn ', node_tooltip, ' });',
               '\n',
               '\n\t\t\t\tnode.append("text")',
               '\n\t\t\t\t.attr("x", -6)',
@@ -576,6 +587,7 @@ generate_html <- function(data, targets, graph_title, page_title = "Sankey Diagr
                 '\n',
                 '\n\t\t\t\tsankey.nodes = function(_) {',
                 '\n\t\t\t\t\tif (!arguments.length) return nodes;',
+                '\n\t\t\t\t\tconsole.log(_);',
                 '\n\t\t\t\t\tnodes = _;',
                 '\n\t\t\t\t\treturn sankey;',
                 '\n\t\t\t\t};',
