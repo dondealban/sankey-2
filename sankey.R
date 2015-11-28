@@ -97,7 +97,7 @@
               '\n\t\t\t\t\t.enter().append("path")',
               '\n\t\t\t\t\t.attr("class", "link")',
               '\n\t\t\t\t\t.attr("d", path)',
-              '\n\t\t\t\t\t.style("stroke-width", function (d) { return Math.max(1, d.dy); })',
+              '\n\t\t\t\t\t.style("stroke-width", function (d) { return Math.max(2, d.dy); })',
               '\n\t\t\t\t\t.sort(function (a, b) { return b.dy - a.dy; });',
               '\n',
               '\n\t\t\t\tlink.append("title")',
