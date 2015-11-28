@@ -114,7 +114,7 @@
               '\n\t\t\t\t\t\t.on("drag", dragmove));',
               '\n',
               '\n\t\t\t\tnode.append("rect")',
-              '\n\t\t\t\t\t.attr("height", function (d) { return d.dy; })',
+              '\n\t\t\t\t\t.attr("height", function (d) { return d.dy > 1 ? d.dy : 1; })',
               '\n\t\t\t\t\t.attr("width", sankey.nodeWidth())',
               '\n\t\t\t\t\t.style("fill", function (d) { return d.color = color(d.name.replace(/ .*/, "")); })',
               '\n\t\t\t\t\t.style("stroke", function (d) { return d3.rgb(d.color).darker(2); })',
